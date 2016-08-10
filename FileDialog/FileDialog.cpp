@@ -14,7 +14,7 @@ void FileDialog::fileClicked(const string & filename)
 {
     filename_entry->SetText(filename);
     filename_entry->SetCursorPosition(filename.size());
-    restore_path();
+    restorePath();
     path_entry->SetState(sfg::Entry::State::NORMAL);
 }
 
@@ -49,13 +49,15 @@ void FileDialog::update()
             tmp_ei = nullptr;
         }
 
-        cout<<"Pack a"<<endl;
+        cout<<"Pack start"<<endl;
+        sf::Clock clock;
+        clock.restart();
         for(unsigned int i = 0; i < items.size(); i++)
         {
             if(items[i]->to_delete == false)
             explorer_box->Pack(items[i]->get());
         }
-        cout<<"Pack b"<<endl;
+        cout<<"Pack end: "<<clock.getElapsedTime().asSeconds()<<endl;
         //int iters = 0;
         unsigned int i = 0;
         unsigned int max = 0;
@@ -92,7 +94,7 @@ void FileDialog::listFiles(string path_name)
 
     struct dirent * file;
     DIR * path;
-    cout<<path_name<<endl;
+    //cout<<path_name<<endl;
     if((path = opendir(path_name.c_str())))
     {
         while((file = readdir(path)))
@@ -105,7 +107,7 @@ void FileDialog::listFiles(string path_name)
             files.push_back(file->d_name);
             else if(is_regular_file(fullpath.c_str()) == 0)
             folders.push_back(file->d_name);
-            else cout<<"is_regular_file != 1, 0"<<endl;
+            //else cout<<"is_regular_file != 1, 0"<<endl;
         }
 
         closedir( path );
@@ -113,7 +115,7 @@ void FileDialog::listFiles(string path_name)
     }
     else
     {
-        show_error("listFiles opendir error\n"+path_name);
+        showError("listFiles opendir error\n"+path_name);
         return;
     }
 }
@@ -125,6 +127,7 @@ FileDialog::FileDialog()
     //cout<<getcwd(NULL,0)<<endl;
     refresh_list = false;
     sfml_window = nullptr;
+    desktop_ = nullptr;
     ExplorerItem::loadImages();
     sf::Clock clock;
     clock.restart();
@@ -144,7 +147,7 @@ FileDialog::FileDialog()
     path_entry = Entry::Create(".");
     top_box->Pack(path_entry);
     //path_entry->GetSignal(path_entry.get()->HandleKeyEvent(sf::Keyboard::Left, true)).Connect(bind(&FileDialog::listFiles, this, path_entry.get()->GetText()));
-    path_entry->GetSignal(Entry::OnRightClick).Connect(bind(&FileDialog::restore_path, this));
+    path_entry->GetSignal(Entry::OnRightClick).Connect(bind(&FileDialog::restorePath, this));
 
     go_path_button = Button::Create("go");
     go_path_button->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::changeDirectory, this));
@@ -174,8 +177,8 @@ FileDialog::FileDialog()
     bottom_box_buttons->Pack(apply);
     bottom_box_buttons->Pack(close);
 
-    apply->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::apply_event, this, false));
-    close->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::hide_window, this));
+    apply->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::applyEvent, this, false));
+    close->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::hideWindow, this));
 
     //info_window
     sf::Vector2f info_window_size(200, 100);
@@ -191,7 +194,7 @@ FileDialog::FileDialog()
     info_button = Button::Create("ok");
     info_box->Pack(info_button);
     info_window->Show(false);
-    info_button->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::hide_error, this));
+    info_button->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::hideError, this));
 
     //overwrite_window
     sf::Vector2f overwrite_window_size(300, 100);
@@ -212,9 +215,9 @@ FileDialog::FileDialog()
     overwrite_box_b->Pack(overwrite_button_cancel);
     overwrite_window->Show(false);
     overwrite_box->Pack(overwrite_box_b);
-    overwrite_button_cancel->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::hide_overwrite_window, this));
-    overwrite_button_ok->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::apply_event, this, true));
-    hide_window();
+    overwrite_button_cancel->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::hideOverwriteWindow, this));
+    overwrite_button_ok->GetSignal(Button::OnLeftClick).Connect(bind(&FileDialog::applyEvent, this, true));
+    hideWindow();
 }
 
  void FileDialog::setRenderWindow(sf::RenderWindow & win)
@@ -222,7 +225,7 @@ FileDialog::FileDialog()
      sfml_window = &win;
  }
 
-void FileDialog::show_error(const string & message)
+void FileDialog::showError(const string & message)
 {
     desktop_->BringToFront(info_window);
     info_label->SetText(message);
@@ -231,13 +234,13 @@ void FileDialog::show_error(const string & message)
     dialog_window->SetState(Widget::State::INSENSITIVE);
 }
 
-void FileDialog::hide_error()
+void FileDialog::hideError()
 {
     info_window->Show(false);
     dialog_window->SetState(Widget::State::NORMAL);
 }
 
-void FileDialog::show_overwrite_window(const string & message)
+void FileDialog::showOverwriteWindow(const string & message)
 {
     desktop_->BringToFront(overwrite_window);
     overwrite_label->SetText(message+"\nfile already exist. Do you want to replace?\nIf you confirm this file will be lost!");
@@ -246,19 +249,19 @@ void FileDialog::show_overwrite_window(const string & message)
     dialog_window->SetState(Widget::State::INSENSITIVE);
 }
 
-void FileDialog::hide_overwrite_window()
+void FileDialog::hideOverwriteWindow()
 {
     overwrite_window->Show(false);
     dialog_window->SetState(Widget::State::NORMAL);
 }
 
-void FileDialog::restore_path()
+void FileDialog::restorePath()
 {
     path_entry->SetText(path);
     path_entry->SetCursorPosition(path.size());
 }
 
-void FileDialog::hide_window()
+void FileDialog::hideWindow()
 {
     dialog_window->Show(false);
     overwrite_window->Show(false);
@@ -267,6 +270,12 @@ void FileDialog::hide_window()
 
 void FileDialog::action(Action action_type)
 {
+    if(desktop_ == nullptr)
+    {
+        cout<<"FileDialog error: desktop not set. Use setDesktop(Desktop & desktop)"<<endl;
+        return;
+    }
+
     a_type = action_type;
     dialog_window->SetState(Widget::State::NORMAL);
     listFiles(path);
@@ -289,34 +298,37 @@ void FileDialog::action(Action action_type)
     }
 }
 
-void FileDialog::enter_key_pressed()
+void FileDialog::enterKeyPressed()
 {
-    if(path_entry->HasFocus())
-    changeDirectory();
-    else if(filename_entry->HasFocus())
-    apply_event(false);
+    if(dialog_window->IsGloballyVisible())
+    {
+        if(path_entry->HasFocus())
+        changeDirectory();
+        else if(filename_entry->HasFocus())
+        applyEvent(false);
+    }
 }
 
-void FileDialog::return_ready()
+void FileDialog::returnReady()
 {
     event = true;
     data = Data(path, filename_entry->GetText(), path+"\\"+filename_entry->GetText());
     a_type = NONE;
 }
 
-void FileDialog::apply_event(bool confirm)
+void FileDialog::applyEvent(bool confirm)
 {
     if(a_type == SELECT_FILE)
     {
         if(is_regular_file(string(path+"\\"+filename_entry->GetText()).c_str()) == 1)
         {
-            return_ready();
-            hide_window();
+            returnReady();
+            hideWindow();
         }
         else
         {
             event = false;
-            show_error(path+"\\"+filename_entry->GetText()+"\ndoes not exist.");
+            showError(path+"\\"+filename_entry->GetText()+"\ndoes not exist.");
         }
 
     }
@@ -328,25 +340,25 @@ void FileDialog::apply_event(bool confirm)
             {
                 if(dirExists(path) == 0)
                 {
-                    cout<<"SELECT_FOLDER OK "<<data.directory<<endl;
-                    return_ready();
-                    hide_window();
+                    //cout<<"SELECT_FOLDER OK "<<data.directory<<endl;
+                    returnReady();
+                    hideWindow();
                 }
             }
             else
             {
                 if(dirExists(path+"\\"+filename_entry->GetText()) == 0)
                 {
-                    show_error(path+"\\"+filename_entry->GetText()+"\nis a directory.");
+                    showError(path+"\\"+filename_entry->GetText()+"\nis a directory.");
                 }
                 else if(confirm == false && is_regular_file(string(path+"\\"+filename_entry->GetText()).c_str()) == 1)
                 {
-                    show_overwrite_window(path+"\\"+filename_entry->GetText());
+                    showOverwriteWindow(path+"\\"+filename_entry->GetText());
                 }
                 else
                 {
-                    return_ready();
-                    hide_window();
+                    returnReady();
+                    hideWindow();
                 }
             }
         }
@@ -359,28 +371,28 @@ void FileDialog::apply_event(bool confirm)
             {
                 if(confirm == false && is_regular_file(string(path+"\\"+filename_entry->GetText()).c_str()) == 1)
                 {
-                    show_overwrite_window(path+"\\"+filename_entry->GetText());
+                    showOverwriteWindow(path+"\\"+filename_entry->GetText());
 
                 }
                 else if(dirExists(path+"\\"+filename_entry->GetText()) == 0)
                 {
-                    show_error(path+"\\"+filename_entry->GetText()+"\nis a directory.");
+                    showError(path+"\\"+filename_entry->GetText()+"\nis a directory.");
                 }
                 else
                 {
-                    return_ready();
-                    hide_window();
+                    returnReady();
+                    hideWindow();
                 }
             }
             else
             {
-                show_error(path+"path is invalid or cannot access");
+                showError(path+"path is invalid or cannot access");
             }
 
         }
         else
         {
-            show_error("Enter file name");
+            showError("Enter file name");
         }
     }
 }
@@ -402,12 +414,11 @@ void FileDialog::changeDirectory()
     if(checkDirectory(path_entry->GetText()))
         listFiles(path_entry->GetText());
     else
-        show_error(path_entry->GetText()+"\nis not a directory or access denied.");
+        showError(path_entry->GetText()+"\nis not a directory or access denied.");
 }
 
 void FileDialog::setDesktop(Desktop & desktop)
 {
-    //desktop_ = shared_ptr<Desktop>(&desktop);
     desktop_ = &desktop;
     desktop_->Add(dialog_window);
     desktop_->Add(info_window);
@@ -428,13 +439,9 @@ FileDialog::ExplorerItem::ExplorerItem(int type, string name)
     box->Pack(folder_img);
     else if(type == 1)
     box->Pack(file_img);
-    else cout<<"UNRECOGNIZED FILE TYPE"<<endl;
+    //else cout<<"UNRECOGNIZED FILE TYPE"<<endl;
     box->Pack(label, false, true);
-
-//folder_img->SetPosition(sf::Vector2f(0, 0));
-//box->SetPosition(sf::Vector2f(0, 0));
-box->SetRequisition(sf::Vector2f(3000, 26));
-//box->SetAllocation(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(200, 26)));
+    box->SetRequisition(sf::Vector2f(2000, 26));
 }
 
 Box::Ptr FileDialog::ExplorerItem::get()

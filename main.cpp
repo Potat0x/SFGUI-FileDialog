@@ -1,9 +1,4 @@
-#include <SFGUI/SFGUI.hpp>
-#include <SFML/Graphics.hpp>
-#include <iostream>
 #include "FileDialog/FileDialog.hpp"
-
-using namespace std;
 
 class Gui
 {
@@ -33,8 +28,8 @@ class Gui
     public:
     Gui(sfg::Desktop & desktop, sf::RenderWindow & renderwindow)
     {
-        filedialog.setDesktop(desktop); //pass desktop to filedialog. Required before using dialog
-        filedialog.setRenderWindow(renderwindow); //for centering dialog in SFML window. Not required
+        filedialog.setDesktop(desktop);
+        filedialog.setRenderWindow(renderwindow);
 
         window = sfg::Window::Create();
         box = sfg::Box::Create(sfg::Box::Orientation::VERTICAL);
@@ -56,6 +51,11 @@ class Gui
         box->Pack(open_dir_button);
         box->Pack(save_file_as_button);
         box->Pack(label);
+    }
+
+    FileDialog & get_filedialog()
+    {
+        return filedialog;
     }
 
     void update()
@@ -93,6 +93,8 @@ class Gui
         //filedialog.eventOccured() here will return false beacuse it was already called
     }
 
+    private:
+
     void create_new_file()
     {
         cout<<"create_new_file()"<<endl;
@@ -120,6 +122,7 @@ class Gui
         my_operation = SAVE_AS;
         filedialog.action(FileDialog::Action::SELECT_FOLDER_AND_TYPE_FILENAME);
     }
+
 };
 
 int main()
@@ -141,6 +144,8 @@ int main()
 			desktop.HandleEvent( event );
 			if( event.type == sf::Event::Closed )
 				sfmlwindow.close();
+            else if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return )
+                my_gui.get_filedialog().enterKeyPressed();
 		}
 
 		my_gui.update();

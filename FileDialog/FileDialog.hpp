@@ -1,13 +1,9 @@
 #ifndef file_dialog
 #define file_dialog
-#include <SFGUI/SFGUI.hpp>
 
-#include <dirent.h>
-#include <sys/types.h>
+#include <SFGUI/SFGUI.hpp>
 #include <sys/stat.h>
-#include <unistd.h>
-#include <vector>
-#include <memory>
+#include <dirent.h>
 
 using namespace sfg;
 using namespace std;
@@ -18,14 +14,14 @@ public:
     enum Action
     {
         NONE,
-        SELECT_FILE,//open file, overwrite file
-        SELECT_FOLDER,//get directory optionally with filename, save as
+        SELECT_FILE,
+        SELECT_FOLDER,
         SELECT_FOLDER_AND_TYPE_FILENAME
     };
 
-    class Data
+    class Data  //data structure for user
     {
-        public:
+        public:          //    example
         string directory;//    C:\Windows\System32
         string file_name;//    cmd.exe
         string file_path;//    C:\Windows\System32\cmd.exe
@@ -35,12 +31,12 @@ public:
     };
     Data data;
     FileDialog();
-    void setDesktop(Desktop & desktop);
-    void setRenderWindow(sf::RenderWindow & win);
+    void setDesktop(Desktop & desktop);//pass desktop to filedialog. Required before using dialog
+    void setRenderWindow(sf::RenderWindow & win);//if you use it FileDialog will be centered in RenderWindow
+    void action(Action action_type);//run FileDialog window
+    bool eventOccured();//true if user click ok button and entered data are correct
+    void enterKeyPressed();//call it when enter key is pressed, allow to activate text entries via Enter key
     void update();
-    void action(Action action_type);
-    bool eventOccured();
-    void enter_key_pressed();
 
 private:
 
@@ -48,7 +44,6 @@ private:
     bool event;
     string path;
     Desktop * desktop_;
-    //shared_ptr<Desktop>desktop_;
     sf::RenderWindow * sfml_window;
 
     vector <string> folders, files;
@@ -66,7 +61,7 @@ private:
     Button::Ptr go_path_button;
     void changeDirectory();
     void goParentDirectory();
-    void restore_path();
+    void restorePath();
 
     Box::Ptr explorer_box;                //middle
     ScrolledWindow::Ptr explorer_window;
@@ -77,16 +72,16 @@ private:
     Box::Ptr bottom_box_buttons;
     Entry::Ptr filename_entry;
     Button::Ptr apply, close;
-    void apply_event(bool confirm);
-    void return_ready();
-    void hide_window();
+    void applyEvent(bool confirm);
+    void returnReady();
+    void hideWindow();
 
     Window::Ptr info_window;            //info
     Box::Ptr info_box;
     Label::Ptr info_label;
     Button::Ptr info_button;
-    void show_error(const string & message);
-    void hide_error();
+    void showError(const string & message);
+    void hideError();
 
     Window::Ptr overwrite_window;            //overwrite
     Box::Ptr overwrite_box;
@@ -94,8 +89,8 @@ private:
     Label::Ptr overwrite_label;
     Button::Ptr overwrite_button_ok;
     Button::Ptr overwrite_button_cancel;
-    void show_overwrite_window(const string & message);
-    void hide_overwrite_window();
+    void showOverwriteWindow(const string & message);
+    void hideOverwriteWindow();
 
 private:
     class ExplorerItem
