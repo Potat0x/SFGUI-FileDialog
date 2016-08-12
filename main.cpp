@@ -1,12 +1,16 @@
 #include "FileDialog/FileDialog.hpp"
 
+/*
+    FileDialog usage example
+    see also FileDialog.hpp for more info
+*/
+
 class Gui
 {
     sfg::Box::Ptr box;
     sfg::Window::Ptr window;
     sfg::Label::Ptr label;
 
-    //buttons
     sfg::Button::Ptr new_file_button;
     sfg::Button::Ptr open_file_button;
     sfg::Button::Ptr open_dir_button;
@@ -23,13 +27,13 @@ class Gui
     };
     GuiOperations my_operation;
 
-    FileDialog filedialog;      //creating file dialog
+    FileDialog filedialog;      //creating dialog
 
     public:
     Gui(sfg::Desktop & desktop, sf::RenderWindow & renderwindow)
     {
-        filedialog.setDesktop(desktop);
-        filedialog.setRenderWindow(renderwindow);
+        filedialog.setDesktop(desktop);//you must pass desktop to dialog
+        filedialog.setRenderWindow(renderwindow);//setting render window to obtain centered FileDialog window in RenderWindow
 
         window = sfg::Window::Create();
         box = sfg::Box::Create(sfg::Box::Orientation::VERTICAL);
@@ -60,14 +64,14 @@ class Gui
 
     void update()
     {
-        filedialog.update();
+        filedialog.update();//update
 
-        if(filedialog.eventOccured())
+        if(filedialog.eventOccured())//check if event occured
         {
             if(my_operation == OPEN_FILE)
             {
                 cout<<"Open file: "<<filedialog.data.file_path<<endl;
-                label->SetText("\nOpen file: \n"+filedialog.data.file_path);
+                label->SetText("\nOpen file: \n"+filedialog.data.file_path);//read data from dialog
             }
 
             if(my_operation == CREATE_NEW_FILE)
@@ -99,7 +103,7 @@ class Gui
     {
         cout<<"create_new_file()"<<endl;
         my_operation = CREATE_NEW_FILE;
-        filedialog.action(FileDialog::Action::SELECT_FOLDER_AND_TYPE_FILENAME);
+        filedialog.action(FileDialog::Action::SELECT_FOLDER_AND_TYPE_FILENAME);//show dialog and specify what user should do
     }
 
     void open_file()
@@ -145,7 +149,9 @@ int main()
 			if( event.type == sf::Event::Closed )
 				sfmlwindow.close();
             else if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return )
-                my_gui.get_filedialog().enterKeyPressed();
+                my_gui.get_filedialog().enterKeyPressed();//now you can use enter key to confirm text entries in dialog
+            else if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape )
+                return 0;
 		}
 
 		my_gui.update();

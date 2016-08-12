@@ -1,3 +1,9 @@
+/*
+    FileDialog window feature for SFGUI
+    https://github.com/Potat0x/SFGUI-FileDialog
+    http://potat0x.cba.pl/
+*/
+
 #ifndef file_dialog
 #define file_dialog
 
@@ -39,7 +45,6 @@ public:
     void update();
 
 private:
-
     Action a_type;
     bool event;
     string path;
