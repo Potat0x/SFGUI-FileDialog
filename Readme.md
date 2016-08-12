@@ -1,5 +1,6 @@
 # SFGUI-FileDialog
-FileDialog is file dialog feature for SFGUI
+
+FileDialog window feature for SFGUI
 
 Check out main.cpp to see how to use it. There is simple compilable example.
 
