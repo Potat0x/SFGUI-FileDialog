@@ -49,7 +49,7 @@ void FileDialog::update()
             tmp_ei = nullptr;
         }
 
-        cout<<"Pack start"<<endl;
+        //cout<<"Pack start"<<endl;
         sf::Clock clock;
         clock.restart();
         for(unsigned int i = 0; i < items.size(); i++)
@@ -57,7 +57,7 @@ void FileDialog::update()
             if(items[i]->to_delete == false)
             explorer_box->Pack(items[i]->get());
         }
-        cout<<"Pack end: "<<clock.getElapsedTime().asSeconds()<<endl;
+        //cout<<"Pack end: "<<clock.getElapsedTime().asSeconds()<<endl;
         //int iters = 0;
         unsigned int i = 0;
         unsigned int max = 0;
@@ -182,7 +182,7 @@ FileDialog::FileDialog()
 
     //info_window
     sf::Vector2f info_window_size(200, 100);
-    info_window = Window::Create(sfg::Window::Style::TOPLEVEL);
+    info_window = Window::Create(sfg::Window::Style::TOPLEVEL );
     info_window->SetTitle("Error");
     info_box = Box::Create(Box::Orientation::VERTICAL);
     info_box->SetSpacing(10);
