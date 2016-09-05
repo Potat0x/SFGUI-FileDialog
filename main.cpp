@@ -29,7 +29,7 @@ class Gui
 
     FileDialog filedialog;      //creating dialog
 
-    public:
+public:
     Gui(sfg::Desktop & desktop, sf::RenderWindow & renderwindow)
     {
         filedialog.setDesktop(desktop);//you must pass desktop to dialog
@@ -98,8 +98,7 @@ class Gui
         //filedialog.eventOccured() here will return false beacuse it was already called
     }
 
-    private:
-
+private:
     void create_new_file()
     {
         cout<<"create_new_file()"<<endl;
@@ -132,34 +131,34 @@ class Gui
 
 int main()
 {
-	sf::RenderWindow sfmlwindow( sf::VideoMode( 800, 600 ), "FileDialog example");
-	sfmlwindow.resetGLStates();
+    sf::RenderWindow sfmlwindow( sf::VideoMode( 800, 600 ), "FileDialog example");
+    sfmlwindow.resetGLStates();
 
-	sfg::SFGUI m_sfgui;
-	sfg::Desktop desktop;
-	Gui my_gui(desktop, sfmlwindow);
+    sfg::SFGUI m_sfgui;
+    sfg::Desktop desktop;
+    Gui my_gui(desktop, sfmlwindow);
 
     sf::Event event;
     sf::Clock clock;
     clock.restart();
-	while( sfmlwindow.isOpen() )
+    while( sfmlwindow.isOpen() )
     {
-		while( sfmlwindow.pollEvent( event ) )
+        while( sfmlwindow.pollEvent( event ) )
         {
-			desktop.HandleEvent( event );
-			if( event.type == sf::Event::Closed )
-				sfmlwindow.close();
+            desktop.HandleEvent( event );
+            if( event.type == sf::Event::Closed )
+                sfmlwindow.close();
             else if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return )
                 my_gui.get_filedialog().enterKeyPressed();//now you can use enter key to confirm text entries in dialog
             else if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape )
                 return 0;
-		}
+        }
 
-		my_gui.update();
+        my_gui.update();
 
-		desktop.Update( clock.restart().asSeconds() );
+        desktop.Update( clock.restart().asSeconds() );
         sfmlwindow.clear();
-		m_sfgui.Display( sfmlwindow );
-		sfmlwindow.display();
+        m_sfgui.Display( sfmlwindow );
+        sfmlwindow.display();
     }
 }

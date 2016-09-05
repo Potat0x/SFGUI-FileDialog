@@ -7,7 +7,9 @@
 #ifndef file_dialog
 #define file_dialog
 
+#include <SFML/Graphics.hpp>
 #include <SFGUI/SFGUI.hpp>
+#include <SFGUI/Widgets.hpp>
 #include <sys/stat.h>
 #include <dirent.h>
 
@@ -27,12 +29,12 @@ public:
 
     class Data  //data structure for user
     {
-        public:          //    example
+    public:          //    example
         string directory;//    C:\Windows\System32
         string file_name;//    cmd.exe
         string file_path;//    C:\Windows\System32\cmd.exe
 
-        Data(){}
+        Data() {}
         Data(string dir, string fn, string fp): directory(dir), file_name(fn), file_path(fp)  {}
     };
     Data data;
